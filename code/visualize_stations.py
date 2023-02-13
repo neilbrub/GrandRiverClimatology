@@ -36,8 +36,8 @@ def plot_series(x_series, y_series, ax, label=""):
     """
     y_data = y_series.to_numpy()
     # data_max = np.nanmax(y_data)
-    data_max = 30
     # data_min = np.nanmin(y_data)
+    data_max = 30
     data_min = 0
 
     ax.plot(x_series, y_series, label=label, alpha=0.8)
