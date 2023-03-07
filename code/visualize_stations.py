@@ -30,21 +30,22 @@ def identify_nan_windows(data):
     return nan_windows
 
 
-def plot_series(x_series, y_series, ax, label=""):
+def plot_series(x_series, y_series, ax, label="", shade_nodata=False):
     """
     Plot series & shade nodata segments 
     """
-    y_data = y_series.to_numpy()
-    # data_max = np.nanmax(y_data)
-    # data_min = np.nanmin(y_data)
-    data_max = 30
-    data_min = 0
-
     ax.plot(x_series, y_series, label=label, alpha=0.8)
 
-    # nan_windows = identify_nan_windows(y_data)
-    # for start, end in nan_windows:
-    #     ax.fill_betweenx([data_min, data_max], x_series[start], x_series[end], alpha=0.2, color='k')
+    if shade_nodata:
+        y_data = y_series.to_numpy()
+        data_max = np.nanmax(y_data)
+        data_min = np.nanmin(y_data)
+        data_max = 35
+        data_min = -0.5
+
+        nan_windows = identify_nan_windows(y_data)
+        for start, end in nan_windows:
+            ax.fill_betweenx([data_min, data_max], x_series[start], x_series[end], alpha=0.2, color='k')
 
 
 
@@ -53,21 +54,48 @@ Change things here
 """
 def main():
 
-    # Point this to processed spreadsheet
-    excel_filpath = 'data/processed/2001-2010_cutoff_neghalf_35.xlsx'
-    base_dir = '../'
+    base_dir = ''
     
 
-    data = pd.read_excel(base_dir + excel_filpath, index_col=0)
+    # For combined sheets separated by column:
+    excel_filpath = 'data/processed/merged_data_neghalf_35.xlsx'
+    data_df = pd.read_excel(base_dir + excel_filpath, index_col=0)
+    stn_names = ['bridgeport', 'blair', 'glenmorris', 'road32']
+    data_dts = [data_df.index for i in stn_names]
+    stn_data = [data_df[col] for col in stn_names] 
 
-    fig, ax = plt.subplots(figsize=(14, 7))
 
-    plot_series(data['Date/Time'], data['Bridgeport'], ax, label="Bridgeport")
-    plot_series(data['Date/Time'], data['Blair'], ax, label="Blair")
-    # plot_series(data['Date/Time'], data['Glen_Morris'], ax, label="Glen Morris")
-    plot_series(data['Date/Time'], data['Road_32'], ax, label="Road 32")
+    # # For individual sheets:
+    # data_base_fp = base_dir + 'data/processed/1996-2004_'
+    # sheet_fps = ['blair_neghalf_35.xlsx', 'bridgeport_neghalf_35.xlsx',
+    #              'glenmorris_neghalf_35.xlsx', 'road32_neghalf_35.xlsx']
+    
+    # stn_names = ['Bridgeport', 'Blair', 'Glen_Morris', 'Road_32']
+    # stn_data = []
+    # data_dts = []
+    
+    # for sheet_fp in sheet_fps:
+    #     data_df = pd.read_excel(data_base_fp + sheet_fp, index_col=0)
+    #     data_dts.append(data_df['DATE'])
+    #     stn_data.append(data_df['PARM_VAL'])
+
+
+    # plt.rc('font', size=20)
+    # plt.rc('axes', labelsize=18)
+    # plt.rc('xtick', labelsize=18)
+    # plt.rc('ytick', labelsize=18)
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    for i, data in enumerate(stn_data):
+        plot_series(data_dts[i], data, ax, label=stn_names[i])
+
     ax.legend()
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Temperature ($\degree$C)")
 
+    plt.title("Grand River Hourly Water Temperatures, 1996-2010")
+
+    # plt.savefig(base_dir + 'plots/series/1996-2010_4stns_clipped.png')
     plt.show()
 
 

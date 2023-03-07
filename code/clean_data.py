@@ -1,8 +1,10 @@
 import os
+import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from configs import data_file_configs
 
 def filterBad(df, col_names, range_limits=[-1, 35], fill_val=np.nan):
     """
@@ -22,20 +24,24 @@ def filterBad(df, col_names, range_limits=[-1, 35], fill_val=np.nan):
 
 
 def main():
-    input_file = '../data/raw/2001-2010.xlsx'
-    sheet_name = '2001-2010'
-    cols = 'D:H'
-    header_row = 1
+    parser = argparse.ArgumentParser(prog='clean_data.py')
+    parser.add_argument('config', help='Config key in data_file_configs')
+    args = parser.parse_args()
+    cfg_key = args.config
+    if cfg_key not in data_file_configs: raise KeyError(cfg_key)
 
-    range_limits = [-0.5, 35]
+    input_file = '../data/raw/1996-2004.xlsx'
+    
+    sheet_name = data_file_configs[cfg_key]['sheet_name']
+    cols = data_file_configs[cfg_key]['cols']
+    header_row = data_file_configs[cfg_key]['header_row']
+    header_names = data_file_configs[cfg_key]['header_names']
+    range_limits = data_file_configs[cfg_key]['range_limits']
 
-    output_file = '../data/processed/2001-2010_cutoff_neghalf_35.xlsx'
+    output_file = '../data/processed/' + data_file_configs[cfg_key]['output_fname'] + '.xlsx'
     output_dir = '/'.join(output_file.split('/')[:-1])
 
     if not os.path.exists(output_dir): os.makedirs(output_dir)
-
-
-    header_names = ['Date/Time', 'Bridgeport', 'Blair', 'Glen_Morris', 'Road_32']
 
     df = pd.read_excel(input_file, sheet_name=sheet_name, header=header_row,
         usecols=cols, names=header_names)
